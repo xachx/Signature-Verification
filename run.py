@@ -18,10 +18,11 @@ forged_image_filenames = listdir("data/forged")
 #文件路径
 genuine_image_paths = "data/genuine"
 forged_image_paths = "data/forged"
-
+#0-11
 genuine_image_features = [[] for x in range(12)]
 forged_image_features = [[] for x in range(12)]
-
+#signature_id分字符串，然后截取取倒数第三个开始，例如001，012
+#genuine_image_features添加文件名，是全部名字叠加[{'name': '001001_000.png'}, {'name': '001001_001.png'}]
 for name in genuine_image_filenames:
     signature_id = int(name.split('_')[0][-3:])
     genuine_image_features[signature_id - 1].append({"name": name})
@@ -30,7 +31,7 @@ for name in forged_image_filenames:
     signature_id = int(name.split('_')[0][-3:])
     forged_image_features[signature_id - 1].append({"name": name})
 
-
+#预处理图片，用opencv转灰度
 def preprocess_image(path, display=False):
     raw_image = cv2.imread(path)
     bw_image = cv2.cvtColor(raw_image, cv2.COLOR_BGR2GRAY)
@@ -39,7 +40,7 @@ def preprocess_image(path, display=False):
     if display:
         cv2.imshow("RGB to Gray", bw_image)
         cv2.waitKey()
-
+#返回两个值，第一个阈值忽略了，第二个是处理后的图片
     _, threshold_image = cv2.threshold(bw_image, 30, 255, 0)
 
     if display:
@@ -48,12 +49,15 @@ def preprocess_image(path, display=False):
 
     return threshold_image
 
-
+#获取轮廓
 def get_contour_features(im, display=False):
     '''
     :param im: input preprocessed image
     :param display: flag - if true display images
     :return:aspect ratio of bounding rectangle, area of : bounding rectangle, contours and convex hull
+    :param im：输入预处理图像
+    :param display：flag  - 如果为true，则显示图像
+    :return：边界矩形的纵横比，面积：边界矩形，轮廓和凸包
     '''
 
     rect = cv2.minAreaRect(cv2.findNonZero(im))
@@ -93,7 +97,7 @@ def get_contour_features(im, display=False):
     return aspect_ratio, bounding_rect_area, hull_area, contour_area
 
 des_list = []
-
+#筛 计算角点
 def sift(im, path, display=False):
     raw_image = cv2.imread(path)
     sift = cv2.xfeatures2d.SIFT_create()
@@ -109,7 +113,7 @@ def sift(im, path, display=False):
 
 cor = 0
 wrong = 0
-
+#轮廓特征
 im_contour_features = []
 
 for i in range(12):
