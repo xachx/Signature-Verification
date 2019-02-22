@@ -12,10 +12,10 @@ from sklearn import tree
 from sklearn import linear_model
 
 
-
+#文件列表
 genuine_image_filenames = listdir("data/genuine")
 forged_image_filenames = listdir("data/forged")
-
+#文件路径
 genuine_image_paths = "data/genuine"
 forged_image_paths = "data/forged"
 
