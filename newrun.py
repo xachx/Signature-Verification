@@ -18,6 +18,8 @@ forged_image_filenames = listdir("data/forged")
 #文件路径
 genuine_image_paths = "data/genuine"
 forged_image_paths = "data/forged"
+zhenimgpaths = "10.png"
+jiaimgpaths = "20.png"
 #0-11
 genuine_image_features = [[] for x in range(12)]
 forged_image_features = [[] for x in range(12)]
@@ -116,6 +118,56 @@ wrong = 0
 #轮廓特征
 im_contour_features = []
 
+#重写逻辑
+
+newim_contour_features = []
+imgdes_list = []
+preprocessed_image = preprocess_image(zhenimgpaths)
+hash = imagehash.phash(Image.open(zhenimgpaths))
+aspect_ratio, bounding_rect_area, convex_hull_area, contours_area = \
+            get_contour_features(preprocessed_image.copy(), display=False)
+hash = int(str(hash), 16)
+#im['hash'] = hash
+#im['aspect_ratio'] = aspect_ratio
+#im['hull_area/bounding_area'] = convex_hull_area / bounding_rect_area
+#im['contour_area/bounding_area'] = contours_area / bounding_rect_area
+newim_contour_features.append([hash, aspect_ratio, convex_hull_area / bounding_rect_area, contours_area / bounding_rect_area])
+imgdes_list.append(sift(preprocessed_image, zhenimgpaths))
+
+
+preprocessed_image = preprocess_image(jiaimgpaths)
+hash = imagehash.phash(Image.open(jiaimgpaths))
+aspect_ratio, bounding_rect_area, convex_hull_area, contours_area = \
+     get_contour_features(preprocessed_image.copy(), display=False)
+
+hash = int(str(hash), 16)
+#im['hash'] = hash
+#im['aspect_ratio'] = aspect_ratio
+#im['hull_area/bounding_area'] = convex_hull_area / bounding_rect_area
+#im['contour_area/bounding_area'] = contours_area / bounding_rect_area
+newim_contour_features.append([hash, aspect_ratio, convex_hull_area / bounding_rect_area, contours_area / bounding_rect_area])
+imgdes_list.append(sift(preprocessed_image, jiaimgpaths))
+
+onedes = imgdes_list[0][1]
+twodes = imgdes_list[1][1]
+descriptors = np.vstack((onedes, twodes))
+k = 100
+voc, variance = kmeans(descriptors, k, 1)
+    # Calculate the histogram of features
+im_features = np.zeros((len(genuine_image_features[i]) + len(forged_image_features[i]), k+4), "float32")
+for i in range(len(genuine_image_features[i]) + len(forged_image_features[i])):
+        words, distance = vq(des_list[i][1], voc)
+        for w in words:
+            im_features[i][w] += 1
+
+        for j in range(4):
+            im_features[i][k+j] = im_contour_features[i][j]
+
+
+print(voc)
+print(variance)
+
+print(imgdes_list)
 #循环开始
 for i in range(12):
     des_list = []
