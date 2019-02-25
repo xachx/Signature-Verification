@@ -116,6 +116,7 @@ wrong = 0
 #轮廓特征
 im_contour_features = []
 
+#循环开始
 for i in range(12):
     des_list = []
     for im in genuine_image_features[i]:
